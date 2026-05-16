@@ -1,0 +1,343 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  .studio { display: flex; height: 640px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; background: var(--color-background-primary); }
+  .sidebar { width: 260px; min-width: 260px; border-right: 0.5px solid var(--color-border-tertiary); display: flex; flex-direction: column; }
+  .sidebar-section { padding: 12px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .sidebar-section h3 { font-size: 11px; font-weight: 500; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .url-row { display: flex; gap: 6px; }
+  .url-row input { flex: 1; padding: 7px 10px; font-size: 12px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-secondary); color: var(--color-text-primary); outline: none; }
+  .url-row input:focus { border-color: var(--color-border-primary); }
+  .url-row button { padding: 7px 12px; font-size: 12px; font-weight: 500; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); cursor: pointer; white-space: nowrap; }
+  .url-row button:hover { background: var(--color-background-secondary); }
+  .url-row button:active { transform: scale(0.97); }
+  .device-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .dev-btn { padding: 8px 6px; font-size: 12px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-secondary); cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.1s; }
+  .dev-btn:hover { background: var(--color-background-secondary); }
+  .dev-btn.active { background: var(--color-background-secondary); border-color: var(--color-border-primary); color: var(--color-text-primary); font-weight: 500; }
+  .dev-btn i { font-size: 15px; }
+  .bg-row { display: flex; gap: 6px; align-items: center; }
+  .swatch { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: border-color 0.1s; flex-shrink: 0; }
+  .swatch.active { border-color: var(--color-border-primary); }
+  .zoom-row { display: flex; align-items: center; gap: 8px; }
+  .zoom-row label { font-size: 12px; color: var(--color-text-secondary); flex: 1; }
+  .zoom-row input[type=range] { flex: 1; }
+  .zoom-val { font-size: 12px; min-width: 32px; text-align: right; color: var(--color-text-secondary); }
+  .capture-btn { margin: 12px; padding: 10px; font-size: 13px; font-weight: 500; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; }
+  .capture-btn:hover { background: var(--color-background-secondary); }
+  .capture-btn:active { transform: scale(0.98); }
+  .capture-btn:disabled { opacity: 0.5; pointer-events: none; }
+  .notice { margin: 0 12px; font-size: 11px; color: var(--color-text-tertiary); line-height: 1.5; padding: 8px 10px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); }
+
+  .viewport { flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto; padding: 32px; position: relative; transition: background 0.2s; }
+  .bg-light { background: #f0eff4; }
+  .bg-white { background: #ffffff; }
+  .bg-dark { background: #1c1c1e; }
+  .bg-blue { background: linear-gradient(135deg, #667eea, #764ba2); }
+  .bg-check { background-image: repeating-conic-gradient(#ccc 0% 25%, #fff 0% 50%); background-size: 16px 16px; }
+
+  .device-wrap { transform-origin: center; transition: transform 0.15s; }
+
+  .phone { width: 260px; background: #111; border-radius: 40px; padding: 14px; box-shadow: 0 0 0 1px #2a2a2a, inset 0 0 0 1px #444, 0 40px 100px rgba(0,0,0,0.6); position: relative; }
+  .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 88px; height: 26px; background: #111; border-radius: 0 0 16px 16px; z-index: 2; }
+  .phone .screen { border-radius: 28px; overflow: hidden; height: 520px; background: #fff; }
+
+  .tablet { width: 400px; background: #111; border-radius: 20px; padding: 14px 10px; box-shadow: 0 0 0 1px #2a2a2a, inset 0 0 0 1px #444, 0 40px 100px rgba(0,0,0,0.6); }
+  .tablet .screen { border-radius: 8px; overflow: hidden; height: 540px; background: #fff; }
+
+  .laptop { width: 520px; }
+  .laptop-lid { background: #222; border-radius: 10px 10px 0 0; padding: 10px 10px 6px; box-shadow: 0 0 0 1px #3a3a3a; }
+  .laptop-lid .screen { border-radius: 4px; overflow: hidden; height: 300px; background: #fff; }
+  .laptop-base { height: 16px; background: linear-gradient(to bottom, #333, #252525); border-radius: 0 0 4px 4px; box-shadow: 0 0 0 1px #3a3a3a; }
+  .laptop-foot { height: 4px; background: #1a1a1a; border-radius: 0 0 6px 6px; margin: 0 18px; }
+
+  .desktop { width: 560px; }
+  .desktop-mon { background: #222; border-radius: 10px; padding: 10px; box-shadow: 0 0 0 1px #3a3a3a; }
+  .desktop-mon .screen { border-radius: 4px; overflow: hidden; height: 330px; background: #fff; }
+  .desktop-neck { width: 50px; height: 22px; background: #2a2a2a; margin: 0 auto; }
+  .desktop-base { width: 160px; height: 8px; background: #222; border-radius: 6px; margin: 0 auto; box-shadow: 0 0 0 1px #3a3a3a; }
+
+  .screen iframe { width: 100%; height: 100%; border: none; display: block; }
+
+  .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 8px; color: #aaa; font-size: 13px; font-family: var(--font-sans); }
+  .empty i { font-size: 28px; opacity: 0.4; }
+
+  .status { font-size: 11px; color: var(--color-text-tertiary); padding: 4px 12px 8px; text-align: center; min-height: 22px; }
+
+  .toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); padding: 9px 18px; background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 13px; color: var(--color-text-primary); box-shadow: 0 4px 20px rgba(0,0,0,0.15); opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 999; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+</style>
+
+<h2 class="sr-only">URL mockup studio — paste a link, choose a device frame, and capture a mockup image.</h2>
+
+<div class="studio">
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <h3>URL</h3>
+      <div class="url-row">
+        <input type="text" id="urlInput" placeholder="https://example.com" />
+        <button onclick="loadURL()">Load</button>
+      </div>
+      <div class="status" id="status"></div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Device</h3>
+      <div class="device-grid">
+        <button class="dev-btn active" data-d="phone" onclick="setDevice('phone', this)"><i class="ti ti-device-mobile" aria-hidden="true"></i> Phone</button>
+        <button class="dev-btn" data-d="tablet" onclick="setDevice('tablet', this)"><i class="ti ti-device-tablet" aria-hidden="true"></i> Tablet</button>
+        <button class="dev-btn" data-d="laptop" onclick="setDevice('laptop', this)"><i class="ti ti-device-laptop" aria-hidden="true"></i> Laptop</button>
+        <button class="dev-btn" data-d="desktop" onclick="setDevice('desktop', this)"><i class="ti ti-device-desktop" aria-hidden="true"></i> Desktop</button>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Background</h3>
+      <div class="bg-row">
+        <div class="swatch active" style="background:#f0eff4; border-color: var(--color-border-secondary);" onclick="setBg('bg-light',this)" title="Light"></div>
+        <div class="swatch" style="background:#fff; border: 2px solid #ddd;" onclick="setBg('bg-white',this)" title="White"></div>
+        <div class="swatch" style="background:#1c1c1e;" onclick="setBg('bg-dark',this)" title="Dark"></div>
+        <div class="swatch" style="background:linear-gradient(135deg,#667eea,#764ba2);" onclick="setBg('bg-blue',this)" title="Gradient"></div>
+        <div class="swatch" style="background-image:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%); background-size:10px 10px;" onclick="setBg('bg-check',this)" title="Transparent"></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Zoom</h3>
+      <div class="zoom-row">
+        <input type="range" min="30" max="100" value="75" step="1" id="zoomSlider" oninput="setZoom(this.value)" />
+        <span class="zoom-val" id="zoomVal">75%</span>
+      </div>
+    </div>
+
+    <button class="capture-btn" id="captureBtn" onclick="captureAndDownload()">
+      <i class="ti ti-camera" aria-hidden="true"></i> Capture mockup
+    </button>
+
+    <div class="notice" id="noticeBox">
+      Paste a URL and hit Load. Most sites block embedding — if the preview is blank, use a screenshot service below, or try a site that allows iframes (like your own).
+    </div>
+  </div>
+
+  <div class="viewport bg-light" id="viewport">
+    <div class="device-wrap" id="deviceWrap" style="transform: scale(0.75);">
+      <div id="deviceFrame">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="screen">
+            <div class="empty"><i class="ti ti-link" aria-hidden="true"></i><span>Enter a URL to preview</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+let currentDevice = 'phone';
+let currentZoom = 75;
+let currentURL = '';
+let hasContent = false;
+
+const frames = {
+  phone: (content) => `<div class="phone"><div class="phone-notch"></div><div class="screen">${content}</div></div>`,
+  tablet: (content) => `<div class="tablet"><div class="screen">${content}</div></div>`,
+  laptop: (content) => `<div class="laptop"><div class="laptop-lid"><div class="screen">${content}</div></div><div class="laptop-base"></div><div class="laptop-foot"></div></div>`,
+  desktop: (content) => `<div class="desktop"><div class="desktop-mon"><div class="screen">${content}</div></div><div class="desktop-neck"></div><div class="desktop-base"></div></div>`,
+};
+
+function iframeHTML(url) {
+  return `<iframe src="${url}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" loading="lazy"></iframe>`;
+}
+
+function emptyHTML(msg) {
+  return `<div class="empty"><i class="ti ti-ban" aria-hidden="true"></i><span>${msg}</span></div>`;
+}
+
+function renderDevice(content) {
+  document.getElementById('deviceFrame').innerHTML = frames[currentDevice](content);
+}
+
+function loadURL() {
+  let raw = document.getElementById('urlInput').value.trim();
+  if (!raw) return;
+  if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
+  currentURL = raw;
+
+  setStatus('Loading…');
+  hasContent = true;
+
+  renderDevice(iframeHTML(currentURL));
+
+  const iframe = document.getElementById('deviceFrame').querySelector('iframe');
+  if (iframe) {
+    iframe.onload = () => setStatus('');
+    iframe.onerror = () => setStatus('Site blocked embedding.');
+    setTimeout(() => {
+      try {
+        const doc = iframe.contentDocument;
+        if (!doc || !doc.body || doc.body.innerHTML === '') {
+          setStatus('Site blocked iframe — capture uses screenshot service.');
+        } else {
+          setStatus('');
+        }
+      } catch(e) {
+        setStatus('Site blocked iframe — capture uses screenshot service.');
+      }
+    }, 2500);
+  }
+}
+
+function setDevice(d, el) {
+  currentDevice = d;
+  document.querySelectorAll('.dev-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  if (hasContent) {
+    renderDevice(iframeHTML(currentURL));
+  } else {
+    renderDevice(`<div class="empty"><i class="ti ti-link" aria-hidden="true"></i><span>Enter a URL to preview</span></div>`);
+  }
+}
+
+function setBg(cls, el) {
+  const vp = document.getElementById('viewport');
+  vp.className = 'viewport ' + cls;
+  document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function setZoom(val) {
+  currentZoom = parseInt(val);
+  document.getElementById('deviceWrap').style.transform = `scale(${currentZoom / 100})`;
+  document.getElementById('zoomVal').textContent = val + '%';
+}
+
+function setStatus(msg) {
+  document.getElementById('status').textContent = msg;
+}
+
+async function captureAndDownload() {
+  if (!hasContent || !currentURL) { showToast('Load a URL first'); return; }
+
+  const btn = document.getElementById('captureBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ti ti-loader" aria-hidden="true"></i> Capturing…';
+
+  const wrap = document.getElementById('deviceWrap');
+  const frame = document.getElementById('deviceFrame').firstElementChild;
+  const iframe = frame ? frame.querySelector('iframe') : null;
+
+  const savedTransform = wrap.style.transform;
+  wrap.style.transform = 'scale(1)';
+  await new Promise(r => setTimeout(r, 100));
+
+  try {
+    let iframeAccessible = false;
+    let iframeDoc = null;
+    if (iframe) {
+      try {
+        iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        if (iframeDoc && iframeDoc.body && iframeDoc.body.innerHTML) iframeAccessible = true;
+      } catch(e) {}
+    }
+
+    const screenEl = frame ? frame.querySelector('.screen') : null;
+    const screenWidth = screenEl ? screenEl.offsetWidth : 300;
+    const screenHeight = screenEl ? screenEl.offsetHeight : 500;
+
+    const frameCanvas = await html2canvas(frame, {
+      useCORS: true,
+      allowTaint: true,
+      scale: 2,
+      backgroundColor: null,
+      logging: false,
+      ignoreElements: el => el.tagName === 'IFRAME',
+    });
+
+    const padding = 80;
+    const final = document.createElement('canvas');
+    final.width = frameCanvas.width + padding * 2;
+    final.height = frameCanvas.height + padding * 2;
+    const ctx = final.getContext('2d');
+
+    const vp = document.getElementById('viewport');
+    const bgColor = getComputedStyle(vp).backgroundColor;
+    const bgImage = getComputedStyle(vp).backgroundImage;
+    if (bgImage && bgImage !== 'none' && vp.classList.contains('bg-blue')) {
+      const grd = ctx.createLinearGradient(0, 0, final.width, final.height);
+      grd.addColorStop(0, '#667eea');
+      grd.addColorStop(1, '#764ba2');
+      ctx.fillStyle = grd;
+    } else if (vp.classList.contains('bg-check')) {
+      ctx.fillStyle = '#ffffff';
+    } else {
+      ctx.fillStyle = bgColor || '#f0eff4';
+    }
+    ctx.fillRect(0, 0, final.width, final.height);
+    ctx.drawImage(frameCanvas, padding, padding);
+
+    if (iframeAccessible && iframeDoc) {
+      try {
+        const ic = await html2canvas(iframeDoc.body, {
+          useCORS: true, allowTaint: true, scale: 2,
+          backgroundColor: '#fff', width: screenWidth, height: screenHeight,
+          windowWidth: screenWidth, windowHeight: screenHeight, logging: false,
+        });
+        const rect = iframe.getBoundingClientRect();
+        const fRect = frame.getBoundingClientRect();
+        const ox = (rect.left - fRect.left) * 2 + padding;
+        const oy = (rect.top - fRect.top) * 2 + padding;
+        ctx.drawImage(ic, 0, 0, ic.width, ic.height, ox, oy, rect.width * 2, rect.height * 2);
+      } catch(e) {}
+    } else if (iframe) {
+      const ssURL = `https://image.thum.io/get/width/800/crop/${screenHeight}/noanimate/${encodeURIComponent(currentURL)}`;
+      await new Promise((res) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          try {
+            const rect = iframe.getBoundingClientRect();
+            const fRect = frame.getBoundingClientRect();
+            const ox = (rect.left - fRect.left) * 2 + padding;
+            const oy = (rect.top - fRect.top) * 2 + padding;
+            ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, ox, oy, rect.width * 2, rect.height * 2);
+          } catch(e2) {}
+          res();
+        };
+        img.onerror = () => res();
+        img.src = ssURL;
+        setTimeout(res, 8000);
+      });
+    }
+
+    wrap.style.transform = savedTransform;
+
+    const link = document.createElement('a');
+    link.download = `mockup-${currentDevice}-${Date.now()}.png`;
+    link.href = final.toDataURL('image/png');
+    link.click();
+    showToast('Mockup downloaded!');
+  } catch(err) {
+    wrap.style.transform = savedTransform;
+    console.error(err);
+    showToast('Capture failed — try again');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ti ti-camera" aria-hidden="true"></i> Capture mockup';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+document.getElementById('urlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') loadURL();
+});
+</script>
