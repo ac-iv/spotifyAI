@@ -1629,17 +1629,17 @@ function renderPersonality(tracks, artists) {
   const isLow = (v) => v < 0.4;
 
   if (isHigh(avgEnergy) && isHigh(avgValence) && isHigh(avgDance)) {
-    name = "The Main Character"; desc = "You live life at full volume. High energy, high vibes, always ready to be the main event. Your playlist is basically a movie trailer for your life."; tags = ["Party Starter", "Hype Energy", "Good Times Only"];
+    name = 'The Main Character'; desc = 'You live life at full volume. High energy, high vibes, always ready to be the main event. Your playlist is basically a movie trailer for your life.'; tags = ['Party Starter', 'Hype Energy', 'Good Times Only'];
   } else if (isLow(avgEnergy) && isLow(avgValence)) {
-    name = "The Sad Bitch Intellectual"; desc = "You feel things deeply and you have the music to prove it. Your playlists are emotional journeys - cinematic, raw, and very much not okay."; tags = ["Emotionally Complex", "Introspective", "Cinematic"];
+    name = 'The Sad Bitch Intellectual'; desc = 'You feel things deeply and you have the music to prove it. Your playlists are emotional journeys — cinematic, raw, and very much not okay.'; tags = ['Emotionally Complex', 'Introspective', 'Cinematic'];
   } else if (isHigh(avgAcoustic) && isLow(avgEnergy)) {
-    name = "The Cozy Minimalist"; desc = "You gravitate toward warmth, stillness, and authenticity. Stripped-back sounds, soft vocals, and music that feels like a hug on a rainy day."; tags = ["Acoustic Soul", "Slow Living", "Warm Tones"];
+    name = 'The Cozy Minimalist'; desc = 'You gravitate toward warmth, stillness, and authenticity. Stripped-back sounds, soft vocals, and music that feels like a hug on a rainy day.'; tags = ['Acoustic Soul', 'Slow Living', 'Warm Tones'];
   } else if (isHigh(avgDance) && isLow(avgValence)) {
-    name = "The Dark Dancer"; desc = "You bop to things that should probably make you sad. The beats are immaculate but the lyrics? Heavy. You are thriving in contradiction."; tags = ["Moody Bops", "Dark Pop", "Contradiction"];
+    name = 'The Dark Dancer'; desc = "You bop to things that should probably make you sad. The beats are immaculate but the lyrics? Heavy. You're thriving in contradiction."; tags = ['Moody Bops', 'Dark Pop', 'Contradiction'];
   } else if (isHigh(avgEnergy) && isLow(avgValence)) {
-    name = "The Controlled Chaos"; desc = "Intense, focused, powerful. Your music is a weapon. You need it loud and you need it now - emotional regulation via sheer sonic force."; tags = ["Intense Listener", "High Octane", "No Chill"];
+    name = 'The Controlled Chaos'; desc = 'Intense, focused, powerful. Your music is a weapon. You need it loud and you need it now — emotional regulation via sheer sonic force.'; tags = ['Intense Listener', 'High Octane', 'No Chill'];
   } else {
-    name = "The Eclectic Explorer"; desc = "Your taste defies boxes. You move fluidly between moods, eras, and genres - guided purely by vibe. Playlists are ecosystems, not categories."; tags = ["Genre Fluid", "Mood Driven", "Curious Ears"];
+    name = 'The Eclectic Explorer'; desc = 'Your taste defies boxes. You move fluidly between moods, eras, and genres — guided purely by vibe. Playlists are ecosystems, not categories.'; tags = ['Genre Fluid', 'Mood Driven', 'Curious Ears'];
   }
 
   document.getElementById('personality-name').textContent = name;
