@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Device Preview</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f0f11;
+    --surface: #1a1a1e;
+    --surface2: #242428;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #f0f0f2;
+    --muted: #888890;
+    --accent: #7c6ef5;
+    --accent-dim: rgba(124,110,245,0.15);
+    --radius: 10px;
+  }
+  body {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .logo {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+  }
+  .logo i { color: var(--accent); font-size: 18px; }
+
+  .url-form {
+    display: flex;
+    flex: 1;
+    min-width: 240px;
+    gap: 8px;
+  }
+  .url-input {
+    flex: 1;
+    height: 36px;
+    padding: 0 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .url-input:focus { border-color: var(--accent); }
+  .url-input::placeholder { color: var(--muted); }
+
+  .btn {
+    height: 36px;
+    padding: 0 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    transition: background .15s, border-color .15s;
+  }
+  .btn:hover { background: var(--surface); border-color: var(--border2); }
+  .btn.primary { background: var(--accent); border-color: transparent; color: #fff; }
+  .btn.primary:hover { background: #6b5ee0; }
+  .btn.active { border-color: var(--accent); color: var(--accent); }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    background: var(--surface);
+  }
+  .divider { width: 1px; height: 20px; background: var(--border2); margin: 0 4px; }
+
+  .presets { display: flex; gap: 4px; flex-wrap: wrap; }
+  .preset-btn {
+    height: 30px;
+    padding: 0 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 11px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all .15s;
+  }
+  .preset-btn:hover { border-color: var(--border2); color: var(--text); }
+  .preset-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+  .zoom-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+  }
+  .zoom-row label { font-size: 11px; color: var(--muted); }
+  .zoom-row input[type=range] {
+    width: 90px;
+    accent-color: var(--accent);
+  }
+  .zoom-val { font-size: 11px; color: var(--muted); min-width: 30px; }
+
+  /* ── Stage ── */
+  #stage {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 32px 20px;
+    overflow: auto;
+    gap: 28px;
+    flex-wrap: wrap;
+  }
+
+  .placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: var(--muted);
+    padding: 80px 20px;
+    text-align: center;
+  }
+  .placeholder i { font-size: 52px; opacity: .4; }
+  .placeholder p { font-size: 14px; }
+
+  /* ── Device ── */
+  .device-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+
+  .device-shell {
+    background: #1c1c1e;
+    border-radius: 44px;
+    padding: 14px;
+    box-shadow: 0 0 0 2px #2e2e30, 0 0 0 3px #111, 0 24px 64px rgba(0,0,0,.6);
+    position: relative;
+    transition: box-shadow .2s;
+  }
+  .device-shell.tablet { border-radius: 24px; padding: 12px; }
+  .device-shell.landscape { border-radius: 28px; padding: 10px; }
+
+  .notch {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 88px;
+    height: 28px;
+    background: #1c1c1e;
+    border-radius: 0 0 18px 18px;
+    z-index: 10;
+  }
+  .side-btn {
+    position: absolute;
+    background: #2a2a2c;
+    border-radius: 3px;
+  }
+  .vol-up { width: 3px; height: 28px; left: -5px; top: 80px; }
+  .vol-dn { width: 3px; height: 28px; left: -5px; top: 118px; }
+  .pwr-btn { width: 3px; height: 40px; right: -5px; top: 100px; }
+
+  .screen {
+    background: #000;
+    overflow: hidden;
+    border-radius: 12px;
+    position: relative;
+  }
+  .screen iframe {
+    display: block;
+    border: none;
+    transform-origin: top left;
+  }
+
+  .home-indicator {
+    width: 100px;
+    height: 4px;
+    background: rgba(255,255,255,.25);
+    border-radius: 2px;
+    margin: 8px auto 0;
+  }
+
+  .device-meta { text-align: center; }
+  .device-name { font-size: 12px; color: var(--muted); }
+  .device-dims { font-size: 10px; color: rgba(255,255,255,.25); margin-top: 2px; }
+
+  .cap-btn {
+    height: 28px;
+    padding: 0 10px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 11px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all .15s;
+  }
+  .cap-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .notice {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    padding: 8px 20px 12px;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <i class="ti ti-device-mobile"></i>
+    Device Preview
+  </div>
+  <div class="url-form">
+    <input class="url-input" id="url-input" type="url" placeholder="https://example.com" />
+    <button class="btn primary" onclick="loadURL()">
+      <i class="ti ti-player-play"></i> Preview
+    </button>
+  </div>
+  <button class="btn" id="orient-btn" onclick="toggleOrientation()">
+    <i class="ti ti-rotate-clockwise"></i> Rotate
+  </button>
+  <button class="btn" id="multi-btn" onclick="toggleMulti()">
+    <i class="ti ti-layout-grid"></i> All Devices
+  </button>
+</header>
+
+<div class="toolbar">
+  <div class="presets" id="presets"></div>
+  <div class="divider"></div>
+  <div class="zoom-row">
+    <label>Zoom</label>
+    <input type="range" id="zoom-slider" min="20" max="100" value="55" step="5" oninput="updateZoom(this.value)" />
+    <span class="zoom-val" id="zoom-val">55%</span>
+  </div>
+</div>
+
+<div id="stage">
+  <div class="placeholder">
+    <i class="ti ti-device-mobile-off"></i>
+    <p>Paste a URL and hit Preview</p>
+  </div>
+</div>
+
+<div class="notice" id="notice" style="display:none">
+  ⚠️ Some sites block iframe embedding (X-Frame-Options / CSP). If the screen is blank, the site doesn't allow previewing — try a different URL.
+</div>
+
+<script>
+const DEVICES = [
+  { id:'ip16',     name:'iPhone 16',          w:393,  h:852,  notch:true,  tablet:false },
+  { id:'ip16pm',   name:'iPhone 16 Pro Max',  w:430,  h:932,  notch:true,  tablet:false },
+  { id:'ipse',     name:'iPhone SE',           w:375,  h:667,  notch:false, tablet:false },
+  { id:'s25',      name:'Galaxy S25',          w:384,  h:832,  notch:true,  tablet:false },
+  { id:'pixel9',   name:'Pixel 9',             w:412,  h:892,  notch:true,  tablet:false },
+  { id:'foldout',  name:'Galaxy Z Fold (open)',w:768,  h:1080, notch:false, tablet:true  },
+  { id:'ipadair',  name:'iPad Air 11"',        w:820,  h:1180, notch:false, tablet:true  },
+  { id:'ipadpro',  name:'iPad Pro 13"',        w:1024, h:1366, notch:false, tablet:true  },
+];
+
+let current = DEVICES[0];
+let landscape = false;
+let zoom = 0.55;
+let currentURL = '';
+let multiMode = false;
+
+/* build preset buttons */
+const presetsEl = document.getElementById('presets');
+DEVICES.forEach(d => {
+  const b = document.createElement('button');
+  b.className = 'preset-btn' + (d === current ? ' active' : '');
+  b.textContent = d.name;
+  b.onclick = () => {
+    current = d;
+    document.querySelectorAll('.preset-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    if (currentURL && !multiMode) renderSingle();
+  };
+  presetsEl.appendChild(b);
+});
+
+function loadURL() {
+  let val = document.getElementById('url-input').value.trim();
+  if (!val) return;
+  if (!/^https?:\/\//i.test(val)) val = 'https://' + val;
+  document.getElementById('url-input').value = val;
+  currentURL = val;
+  document.getElementById('notice').style.display = 'block';
+  if (multiMode) renderMulti();
+  else renderSingle();
+}
+
+document.getElementById('url-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') loadURL();
+});
+
+function getDims(d) {
+  return landscape ? { w: d.h, h: d.w } : { w: d.w, h: d.h };
+}
+
+function buildDeviceFrame(d, z, url) {
+  const dims = getDims(d);
+  const sw = Math.round(dims.w * z);
+  const sh = Math.round(dims.h * z);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'device-wrap';
+
+  const shell = document.createElement('div');
+  shell.className = 'device-shell' + (d.tablet ? ' tablet' : '') + (landscape ? ' landscape' : '');
+
+  /* physical buttons */
+  ['vol-up','vol-dn','pwr-btn'].forEach(cls => {
+    const b = document.createElement('div');
+    b.className = 'side-btn ' + cls;
+    shell.appendChild(b);
+  });
+
+  if (d.notch && !landscape) {
+    const notch = document.createElement('div');
+    notch.className = 'notch';
+    shell.appendChild(notch);
+  }
+
+  const screen = document.createElement('div');
+  screen.className = 'screen';
+  screen.style.width = sw + 'px';
+  screen.style.height = sh + 'px';
+
+  const iframe = document.createElement('iframe');
+  iframe.src = url || 'about:blank';
+  iframe.style.width = dims.w + 'px';
+  iframe.style.height = dims.h + 'px';
+  iframe.style.transform = `scale(${z})`;
+  iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox');
+  screen.appendChild(iframe);
+  shell.appendChild(screen);
+
+  if (!d.tablet && !landscape) {
+    const bar = document.createElement('div');
+    bar.className = 'home-indicator';
+    shell.appendChild(bar);
+  }
+
+  wrap.appendChild(shell);
+
+  const meta = document.createElement('div');
+  meta.className = 'device-meta';
+  meta.innerHTML = `<div class="device-name">${d.name}</div><div class="device-dims">${dims.w} × ${dims.h}</div>`;
+  wrap.appendChild(meta);
+
+  const capBtn = document.createElement('button');
+  capBtn.className = 'cap-btn';
+  capBtn.innerHTML = '<i class="ti ti-camera"></i> Capture frame';
+  capBtn.onclick = () => captureFrame(screen, d.name);
+  wrap.appendChild(capBtn);
+
+  return wrap;
+}
+
+function renderSingle() {
+  const stage = document.getElementById('stage');
+  stage.innerHTML = '';
+  stage.appendChild(buildDeviceFrame(current, zoom, currentURL));
+}
+
+function renderMulti() {
+  const stage = document.getElementById('stage');
+  stage.innerHTML = '';
+  DEVICES.forEach(d => {
+    const z = Math.min(zoom, Math.min(180 / d.h, 260 / d.w));
+    stage.appendChild(buildDeviceFrame(d, z, currentURL));
+  });
+}
+
+function updateZoom(v) {
+  zoom = v / 100;
+  document.getElementById('zoom-val').textContent = v + '%';
+  if (currentURL) {
+    if (multiMode) renderMulti();
+    else renderSingle();
+  }
+}
+
+function toggleOrientation() {
+  landscape = !landscape;
+  const btn = document.getElementById('orient-btn');
+  btn.classList.toggle('active', landscape);
+  if (currentURL) {
+    if (multiMode) renderMulti();
+    else renderSingle();
+  }
+}
+
+function toggleMulti() {
+  multiMode = !multiMode;
+  const btn = document.getElementById('multi-btn');
+  btn.classList.toggle('active', multiMode);
+  if (currentURL) {
+    if (multiMode) renderMulti();
+    else renderSingle();
+  }
+}
+
+function captureFrame(screenEl, name) {
+  html2canvas(screenEl, {
+    useCORS: true,
+    allowTaint: true,
+    scale: 2,
+    backgroundColor: '#000'
+  }).then(canvas => {
+    download(canvas, name);
+  }).catch(() => {
+    /* fallback: blank with label */
+    const canvas = document.createElement('canvas');
+    const iframe = screenEl.querySelector('iframe');
+    canvas.width = parseInt(iframe.style.width);
+    canvas.height = parseInt(iframe.style.height);
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Site blocked screenshot capture', canvas.width / 2, canvas.height / 2);
+    download(canvas, name);
+  });
+}
+
+function download(canvas, name) {
+  const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  const a = document.createElement('a');
+  a.download = slug + '-preview.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+</script>
+</body>
+</html>
